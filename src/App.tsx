@@ -36,14 +36,13 @@ function App() {
         <button onClick={openWindowPortal}>Open Window</button>
       </header>
       <section>
-        {viewState === WindowState.Opened ? (
+        {viewState === WindowState.Opened && (
           <PopWindow>
             <button onClick={closeWindowPortal}>Close Window</button>
             <ExampleComponent />
           </PopWindow>
-        ) : (
-          <ExampleComponent />
         )}
+        <ExampleComponent />
       </section>
     </div>
   );

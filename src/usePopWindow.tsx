@@ -3,6 +3,14 @@ import ReactDOM from "react-dom";
 
 import { copyStyles } from "./copyStyles";
 
+interface IWidowProps {
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  name: string;
+}
+
 export enum WindowState {
   Closed = "closed",
   Opened = "opened",
@@ -10,13 +18,20 @@ export enum WindowState {
 
 type windowPortalAction = () => void;
 
-const WindowPortal = (closeWindowPortal: windowPortalAction) => {
+const WindowPortal = (
+  closeWindowPortal: windowPortalAction,
+  { width, height, left, top, name }: IWidowProps
+) => {
   const PopWindow: React.FC<{}> = ({ children }) => {
     const externalWindow = React.useRef(
-      window.open("", "", "width=800,height=600,left=200,top=200")
+      global.open(
+        "",
+        name.trim(),
+        `width=${width},height=${height},left=${left},top=${top}`
+      )
     );
 
-    const containerEl = externalWindow.current?.document.createElement("div");
+    const containerEl = externalWindow.current?.document.createElement("body");
 
     useEffect(() => {
       const currentWindow = externalWindow.current;
@@ -50,7 +65,15 @@ interface IPopWindow {
   PopWindow: React.FC;
 }
 
-export const usePopWindow = (): IPopWindow => {
+export const usePopWindow = (
+  widowProps: IWidowProps = {
+    width: 800,
+    height: 600,
+    left: 200,
+    top: 200,
+    name: "",
+  }
+): IPopWindow => {
   const [viewState, setviewState] = useState<WindowState>(WindowState.Closed);
 
   const openWindowPortal = useCallback(() => {
@@ -61,15 +84,7 @@ export const usePopWindow = (): IPopWindow => {
     setviewState(WindowState.Closed);
   }, []);
 
-  useEffect(() => {
-    global.addEventListener("beforeunload", closeWindowPortal);
-
-    return () => {
-      global.removeEventListener("beforeunload", closeWindowPortal);
-    };
-  }, [closeWindowPortal]);
-
-  const PopWindow = WindowPortal(closeWindowPortal) as React.FC;
+  const PopWindow = WindowPortal(closeWindowPortal, widowProps);
 
   return {
     closeWindowPortal,
