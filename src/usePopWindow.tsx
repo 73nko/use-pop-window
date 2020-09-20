@@ -18,24 +18,19 @@ export enum WindowState {
 
 type windowPortalAction = () => void;
 
+let containerEl = document.createElement("body");
+
 const WindowPortal = (
   closeWindowPortal: windowPortalAction,
   { width, height, left, top, name }: IWidowProps
 ) => {
   const PopWindow: React.FC<{}> = ({ children }) => {
-    const externalWindow = React.useRef(
-      global.open(
+    useEffect(() => {
+      const currentWindow = global.open(
         "",
         name.trim(),
         `width=${width},height=${height},left=${left},top=${top}`
-      )
-    );
-
-    const containerEl = externalWindow.current?.document.createElement("body");
-
-    useEffect(() => {
-      const currentWindow = externalWindow.current;
-
+      );
       if (currentWindow && containerEl) {
         currentWindow.document.body.appendChild(containerEl);
         copyStyles(document, currentWindow.document);
@@ -46,11 +41,9 @@ const WindowPortal = (
         currentWindow?.removeEventListener("beforeunload", closeWindowPortal);
         currentWindow?.close();
       };
-    }, [externalWindow, containerEl]);
+    }, []);
 
-    if (!containerEl) {
-      return null;
-    }
+    if (!containerEl) return null;
 
     return ReactDOM.createPortal(children, containerEl);
   };
